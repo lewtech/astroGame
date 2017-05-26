@@ -61,6 +61,8 @@ func /= (point: inout CGPoint, scalar: CGFloat) {
     }
 #endif
 
+
+
 extension CGPoint {
 
     func length() -> CGFloat {

@@ -2,12 +2,12 @@ import SpriteKit
 import CoreMotion
 
 class GameScene: SKScene {
-    let hero = SKSpriteNode(imageNamed: "Spaceship")
+    var hero = SKSpriteNode(imageNamed: "Spaceship")
     let obstacle = SKSpriteNode(imageNamed: "obstacle")
     let astronaut = SKSpriteNode(imageNamed: "astronaut")
     var lastUpdateTime: TimeInterval = 0
     var dt: TimeInterval = 0
-    let heroMovePointsPerSec: CGFloat = 200.0
+    let heroMovePointsPerSec: CGFloat = 250.0
     var velocity = CGPoint.zero
     let playableRect: CGRect
     let motionManager = CMMotionManager()
@@ -28,15 +28,25 @@ class GameScene: SKScene {
         fatalError("init(coder:) has not been implemented") // 6
     }
 
-
-    override func didMove(to view: SKView) {
-        backgroundColor = SKColor.black
+    func createHero(){
+        hero = SKSpriteNode(imageNamed: "Spaceship")
+        hero.position = CGPoint(x: 96, y: 672)
+        hero.physicsBody = SKPhysicsBody(circleOfRadius: hero.size.width / 2)
+        hero.physicsBody!.allowsRotation = true
+        hero.physicsBody!.linearDamping = 5.0
         hero.position = CGPoint (x: size.width/2, y: size.height/2)
         hero.setScale(0.33)
         hero.name = "hero"
+        addChild(hero)
+    }
+
+
+    override func didMove(to view: SKView) {
+        backgroundColor = SKColor.black
+        physicsWorld.gravity = CGVector(dx: 0, dy: 0)
         setupCoreMotion()
 
-        addChild(hero)
+        createHero()
         //spawnObstacle()
         spawnAstronaut()
 
@@ -64,6 +74,10 @@ class GameScene: SKScene {
         }
         lastUpdateTime = currentTime
 
+        if let accelerometerData = motionManager.accelerometerData {
+            physicsWorld.gravity = CGVector(dx: accelerometerData.acceleration.x * -25, dy: accelerometerData.acceleration.y * 25)
+        }
+
 
         move(sprite: hero, velocity: velocity)
         boundsCheckHero()
@@ -90,6 +104,7 @@ class GameScene: SKScene {
         let offset = location - hero.position
         let direction = offset.normalized()
         velocity = direction * heroMovePointsPerSec
+        //physicsWorld.gravity =  CGVector (dx: 0, dy: 0)
         //use some type of friction here
     }
 
@@ -100,7 +115,7 @@ class GameScene: SKScene {
 
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-
+        hero.physicsBody?.affectedByGravity = false
         guard let touch = touches.first else {
             return
         }
@@ -110,7 +125,7 @@ class GameScene: SKScene {
     }
 
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
-
+       hero.physicsBody?.affectedByGravity = true
         guard let touch = touches.first else {
             return
         }
@@ -161,6 +176,8 @@ class GameScene: SKScene {
                 let acceleration = accelerometerData.acceleration
                 self.xAcceleration = (CGFloat(acceleration.x) * 0.75) +
                 (self.xAcceleration * 0.25)
+                self.yAcceleration = (CGFloat(acceleration.y) * 0.75) +
+                    (self.yAcceleration * 0.25)
         })
     }
 
