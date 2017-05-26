@@ -13,6 +13,7 @@ class GameScene: SKScene {
     let motionManager = CMMotionManager()
     var xAcceleration = CGFloat(0)
     var yAcceleration = CGFloat(0)
+    var astronautCount = 0
 
     override init(size: CGSize) {
         let maxAspectRatio:CGFloat = 16.0/9.0 // 1
@@ -47,8 +48,8 @@ class GameScene: SKScene {
         setupCoreMotion()
 
         createHero()
-        //spawnObstacle()
-        spawnAstronaut()
+       // spawnObstacle()
+        //spawnAstronaut()
 
         run(SKAction.repeatForever(
             SKAction.sequence([SKAction.run() { [weak self] in
@@ -60,7 +61,7 @@ class GameScene: SKScene {
             SKAction.sequence([SKAction.run() { [weak self] in
                 self?.spawnAstronaut()
                 },
-                               SKAction.wait(forDuration: 10.0)])))
+                               SKAction.wait(forDuration: 5.0)])))
 
 
     }
@@ -205,14 +206,17 @@ class GameScene: SKScene {
         let astronaut = SKSpriteNode(imageNamed: "astronaut")
         astronaut.name = "astronaut"
         astronaut.position = CGPoint(
-            x: CGFloat.random(
-                min: playableRect.minY + obstacle.size.height/2,
-                max: playableRect.maxY - obstacle.size.height/2),
+            x: size.width + obstacle.size.width/2,
             y: CGFloat.random(
                 min: playableRect.minY + obstacle.size.height/2,
                 max: playableRect.maxY - obstacle.size.height/2))
         astronaut.setScale(3.0)
         addChild(astronaut)
+
+        let actionMove =
+            SKAction.moveTo(x: -obstacle.size.width/2, duration: 1.0)
+        let actionRemove = SKAction.removeFromParent()
+        astronaut.run(SKAction.sequence([actionMove, actionRemove]))
 
     }
     //MARK: COLLISION DETECTION
