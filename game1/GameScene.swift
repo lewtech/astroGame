@@ -29,6 +29,7 @@ class GameScene: SKScene {
         backgroundColor = SKColor.black
         hero.position = CGPoint (x: size.width/2, y: size.height/2)
         hero.setScale(0.33)
+        hero.name = "hero"
 
         addChild(hero)
         //spawnObstacle()
@@ -44,7 +45,7 @@ class GameScene: SKScene {
             SKAction.sequence([SKAction.run() { [weak self] in
                 self?.spawnAstronaut()
                 },
-                               SKAction.wait(forDuration: 5.0)])))
+                               SKAction.wait(forDuration: 10.0)])))
 
 
     }
@@ -63,6 +64,7 @@ class GameScene: SKScene {
         boundsCheckHero()
 
         rotate(sprite: hero, direction: velocity)
+        checkCollisions()
     }
 
     func move (sprite: SKSpriteNode, velocity: CGPoint) {
@@ -167,5 +169,40 @@ class GameScene: SKScene {
         addChild(astronaut)
 
     }
-}
+    //MARK: COLLISION DETECTION
 
+    func heroHit(obstacle: SKSpriteNode){
+        obstacle.removeFromParent()
+    }
+
+    func heroHit(astronaut: SKSpriteNode){
+        astronaut.removeFromParent()
+    }
+
+    func checkCollisions(){
+        var hitObstacles: [SKSpriteNode] = []
+        var hitAstronaut: [SKSpriteNode] = []
+
+        enumerateChildNodes(withName: "obstacle"){node, _ in
+            let obstacle = node as! SKSpriteNode
+            if node.frame.insetBy(dx: 20, dy: 30).intersects(self.hero.frame){
+                hitObstacles.append(obstacle)
+            }
+        }
+
+        for obstacle in hitObstacles {
+            heroHit(obstacle: obstacle)
+        }
+
+        enumerateChildNodes(withName: "astronaut"){node, _ in
+            let astronaut = node as! SKSpriteNode
+            if node.frame.insetBy(dx: 20, dy: 30).intersects(self.hero.frame){
+                hitAstronaut.append(astronaut)
+            }
+        }
+
+        for astronaut in hitAstronaut {
+            heroHit(obstacle: astronaut)
+        }
+}
+}
