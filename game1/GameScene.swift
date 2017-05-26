@@ -1,4 +1,5 @@
 import SpriteKit
+import CoreMotion
 
 class GameScene: SKScene {
     let hero = SKSpriteNode(imageNamed: "Spaceship")
@@ -9,6 +10,9 @@ class GameScene: SKScene {
     let heroMovePointsPerSec: CGFloat = 200.0
     var velocity = CGPoint.zero
     let playableRect: CGRect
+    let motionManager = CMMotionManager()
+    var xAcceleration = CGFloat(0)
+    var yAcceleration = CGFloat(0)
 
     override init(size: CGSize) {
         let maxAspectRatio:CGFloat = 16.0/9.0 // 1
@@ -30,6 +34,7 @@ class GameScene: SKScene {
         hero.position = CGPoint (x: size.width/2, y: size.height/2)
         hero.setScale(0.33)
         hero.name = "hero"
+        setupCoreMotion()
 
         addChild(hero)
         //spawnObstacle()
@@ -66,6 +71,12 @@ class GameScene: SKScene {
         rotate(sprite: hero, direction: velocity)
         checkCollisions()
     }
+
+    func checkSlowdown(){
+
+    }
+
+    //MARK: MOVEMENT
 
     func move (sprite: SKSpriteNode, velocity: CGPoint) {
         //1
@@ -136,6 +147,24 @@ class GameScene: SKScene {
         sprite.zRotation = direction.angle
         print (sprite.zRotation)
     }
+
+    //MARK: COREMOTION
+    func setupCoreMotion() {
+        motionManager.accelerometerUpdateInterval = 0.2
+        let queue = OperationQueue()
+        motionManager.startAccelerometerUpdates(to: queue, withHandler:
+            {
+                accelerometerData, error in
+                guard let accelerometerData = accelerometerData else{
+                    return
+                }
+                let acceleration = accelerometerData.acceleration
+                self.xAcceleration = (CGFloat(acceleration.x) * 0.75) +
+                (self.xAcceleration * 0.25)
+        })
+    }
+
+    //MARK: SPAWN
 
     func spawnObstacle() {
         let obstacle = SKSpriteNode(imageNamed: "obstacle")
