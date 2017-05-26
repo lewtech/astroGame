@@ -2,6 +2,8 @@ import SpriteKit
 
 class GameScene: SKScene {
     let hero = SKSpriteNode(imageNamed: "Spaceship")
+    let obstacle = SKSpriteNode(imageNamed: "obstacle")
+    let astronaut = SKSpriteNode(imageNamed: "astronaut")
     var lastUpdateTime: TimeInterval = 0
     var dt: TimeInterval = 0
     let heroMovePointsPerSec: CGFloat = 200.0
@@ -27,7 +29,24 @@ class GameScene: SKScene {
         backgroundColor = SKColor.black
         hero.position = CGPoint (x: size.width/2, y: size.height/2)
         hero.setScale(0.33)
+
         addChild(hero)
+        //spawnObstacle()
+        spawnAstronaut()
+
+        run(SKAction.repeatForever(
+            SKAction.sequence([SKAction.run() { [weak self] in
+                self?.spawnObstacle()
+                },
+                               SKAction.wait(forDuration: 2.0)])))
+
+        run(SKAction.repeatForever(
+            SKAction.sequence([SKAction.run() { [weak self] in
+                self?.spawnAstronaut()
+                },
+                               SKAction.wait(forDuration: 5.0)])))
+
+
     }
 
 
@@ -38,7 +57,7 @@ class GameScene: SKScene {
             dt = 0
         }
         lastUpdateTime = currentTime
-        print("\(dt*1000) milliseconds since last update")
+
 
         move(sprite: hero, velocity: velocity)
         boundsCheckHero()
@@ -50,7 +69,7 @@ class GameScene: SKScene {
         //1
         let amountToMove = CGPoint(x: velocity.x * CGFloat(dt),
                                    y: velocity.y * CGFloat(dt))
-        print("Amount to move: \(amountToMove)")
+        //print("Amount to move: \(amountToMove)")
         sprite.position += amountToMove
     }
 
@@ -91,6 +110,8 @@ class GameScene: SKScene {
         let bottomLeft = CGPoint(x: 0, y: playableRect.minY)
         let topRight = CGPoint(x: size.width, y: playableRect.maxY)
 
+        //reverses the velocity of the hero when a bound is hit
+
         if hero.position.x <= bottomLeft.x {
             hero.position.x = bottomLeft.x
             velocity.x = -velocity.x
@@ -111,5 +132,40 @@ class GameScene: SKScene {
 
     func rotate(sprite: SKSpriteNode, direction: CGPoint) {
         sprite.zRotation = direction.angle
+        print (sprite.zRotation)
+    }
+
+    func spawnObstacle() {
+        let obstacle = SKSpriteNode(imageNamed: "obstacle")
+        obstacle.name = "obstacle"
+        obstacle.setScale(2.0)
+        obstacle.position = CGPoint(
+            x: size.width + obstacle.size.width/2,
+            y: CGFloat.random(
+                min: playableRect.minY + obstacle.size.height/2,
+                max: playableRect.maxY - obstacle.size.height/2))
+        addChild(obstacle)
+
+        let actionMove =
+            SKAction.moveTo(x: -obstacle.size.width/2, duration: 2.0)
+        let actionRemove = SKAction.removeFromParent()
+        obstacle.run(SKAction.sequence([actionMove, actionRemove]))
+//
+    }
+
+    func spawnAstronaut() {
+        let astronaut = SKSpriteNode(imageNamed: "astronaut")
+        astronaut.name = "astronaut"
+        astronaut.position = CGPoint(
+            x: CGFloat.random(
+                min: playableRect.minY + obstacle.size.height/2,
+                max: playableRect.maxY - obstacle.size.height/2),
+            y: CGFloat.random(
+                min: playableRect.minY + obstacle.size.height/2,
+                max: playableRect.maxY - obstacle.size.height/2))
+        astronaut.setScale(3.0)
+        addChild(astronaut)
+
     }
 }
+
